@@ -1,0 +1,38 @@
+[general]
+# Path to the AWSLogs agent's state file. Agent uses this file to maintain
+# client side state across its executions.
+state_file = /var/awslogs/state/agent-state
+
+
+## Each log file is defined in its own section. The section name doesn't
+## matter as long as its unique within this file.
+#
+#[kern.log]
+#
+## Path of log file for the agent to monitor and upload.
+#
+#file = /var/log/kern.log
+#
+## Name of the destination log group.
+#
+#log_group_name = kern.log
+#
+## Name of the destination log stream.
+#
+#log_stream_name = {instance_id}
+#
+## Format specifier for timestamp parsing.
+#
+#datetime_format = %b %d %H:%M:%S
+#
+#
+
+{% for log in web_olympus_app.aws.cloudwatch.logs_to_monitor %}
+
+[{{ log.name }}]
+file = {{ log.path }}
+log_group_name = {{ env }}_{{ role }}_logs
+log_stream_name = {{ env }}_{{ role }}_{{ log.name }}_{{ ansible_ec2_instance_id }}
+datetime_format = %Y-%m-%d %H:%i:%s
+
+{% endfor %}

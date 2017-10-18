@@ -1,0 +1,8 @@
+---
+
+- name: Install Webserver technologies
+  become: yes
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - nginx

@@ -1,0 +1,27 @@
+---
+
+- name: Build Consul Instance
+  hosts: "{{ hosts }}"
+
+#  vars_files:
+#    - ../../vars/environment.yml
+#    - ../../vars/secrets.yml
+#
+  pre_tasks:
+    - name: update apt
+      sudo: yes
+      apt:
+        update_cache: yes
+      tags:
+        - build
+
+    - name: Debug
+      debug:
+        msg: "{{ hosts }}"
+      tags:
+        - build
+
+  roles:
+    - role: consul
+      web_olympus_app:
+        github_auth: "{{ github_auth }}"

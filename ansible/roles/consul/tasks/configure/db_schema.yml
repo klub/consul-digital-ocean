@@ -1,0 +1,16 @@
+---
+##
+# The postgresql RDS integration will throw an error
+# "psycopg2.ProgrammingError: permission denied for relation pg_authid" which can be fixed by only updateing
+# user permissions only when the DB has changed.
+#
+
+- name: Create application schema
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  command: "phing -propertyfile build.properties {{ item }}"
+  args:
+    chdir: "/home/{{ web_olympus_app.name }}/code"
+  environment: "{{ web_olympus_app.env }}"
+  with_items:
+    - configure:db-schema

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+unset `env | grep -o -P SYMFONY__[^\=]+ | xargs`
+
+{% for param, value in web_olympus_app.env.iteritems() %}
+export {{ param }}={{ value }}
+{% endfor %}

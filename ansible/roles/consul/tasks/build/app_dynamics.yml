@@ -1,0 +1,37 @@
+---
+
+- name: Check if App Dynamics agent zip already downloaded
+  become: yes
+  stat:
+    path: "{{ web_olympus_app.root }}/bin/{{ web_olympus_app.app_dynamics.php_agent.compressed_file_name }}"
+  register: app_dynamics_zip
+
+- name: Check if App Dynamics dir created
+  become: yes
+  stat:
+    path: "{{ web_olympus_app.root }}/bin/appdynamics-php-agent"
+  register: app_dynamics_dir
+
+- name: Download App Dynamics agent zip (may take a few mins)
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  s3:
+    bucket: xmas-artefacts
+    object: "/app-dynamics/{{ web_olympus_app.app_dynamics.php_agent.compressed_file_name }}"
+    dest: "{{ web_olympus_app.root }}/bin/{{ web_olympus_app.app_dynamics.php_agent.compressed_file_name }}"
+    mode: get
+    aws_access_key: "{{ web_olympus_app.app_dynamics.aws.iam.access_key_id }}"
+    aws_secret_key: "{{ web_olympus_app.app_dynamics.aws.iam.secret_access_key }}"
+    overwrite: different
+  when: app_dynamics_zip.stat.exists != True
+
+- name: Unzip App Dynamics agent zip
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  unarchive:
+    src: "{{ web_olympus_app.root }}/bin/{{ web_olympus_app.app_dynamics.php_agent.compressed_file_name }}"
+    copy: no
+    dest: "{{ web_olympus_app.root }}/bin"
+    owner: "{{ web_olympus_app.name }}"
+    group: "{{ web_olympus_app.name }}"
+  when: app_dynamics_dir.stat.exists != True

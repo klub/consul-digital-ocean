@@ -1,0 +1,185 @@
+---
+
+- name: Ensure essential packages
+  become: yes
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - screen
+
+    - build-essential
+#    - git
+#    - emacs23-nox
+#    - postgresql-client-9.5
+#    - redis-tools
+#    - php-pear
+#    - python-psycopg2
+    - unzip
+#    - python-dev
+#    - python-pip
+#    - libffi-dev
+#    - libssl-dev
+
+
+- name: Download Consul binary
+  get_url:
+    url: "{{ consul.binary_url }}"
+    dest: "/tmp/consul_{{ consul.version }}_linux_amd64.zip"
+
+- name: Extract Consul binary
+  become: yes
+  unarchive:
+    src: "/tmp/consul_{{ consul.version }}_linux_amd64.zip"
+    dest: /usr/local/bin
+    copy: no
+
+
+- stat:
+    path: /usr/local/bin/consul
+  register: consul
+
+- debug:
+    msg: "consul isn't defined (path doesn't exist)"
+  when: consul.stat.islnk is not defined
+
+- debug:
+    msg: "consul is defined (path must exist)"
+  when: consul.stat.islnk is defined
+
+
+#- name: Download Consul Binary
+#  become: yes
+#  get_url:
+#    url: "{{ consul.binary_url }}"
+#    dest: "/tmp
+#    mode: 0775
+#
+#- name: Extract Consul Binary
+#  become: yes
+#  get_url:
+#    url: "{{ consul.binary_url }}"
+#    dest: "/tmp
+#    mode: 0775
+
+
+
+
+
+#- name: Install python packages
+#  become: yes
+#  pip:
+#    name: '{{ item }}'
+#  with_items:
+#    - 'requests[security]'
+#    - 'boto'
+#    - 'httplib2>=0.8,<1.0'
+
+#- name: Ensure main folders exist
+#  become: yes
+#  become_user: "{{ web_olympus_app.user }}"
+#  file:
+#    name: "{{ web_olympus_app.root }}/{{ item }}"
+#    state: directory
+#  with_items:
+#    - etc
+#    - log
+#    - tmp
+#    - run
+#    - bin
+#
+#- name: Ensures Nginx can access web application folder
+#  become: yes
+#  user:
+#    name: www-data
+#    groups: "{{ web_olympus_app.group }}"
+#    append: yes
+#  notify:
+#    - reload nginx
+#
+#- name: "Checkout {{ web_olympus_app.repo_version }} branch"
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  git:
+#    repo: "git@github.com:JSainsburyPLC/olympus-appng.git"
+#    dest: "/home/{{ web_olympus_app.name }}/code"
+#    update: yes
+#    force: yes
+#    version: "{{ web_olympus_app.repo_version }}"
+#    accept_hostkey: true
+#
+#- name: Create composer config folder
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  file:
+#    name: ~/.composer
+#    state: directory
+#
+#- name: Create composer github auth
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: composer/auth.j2
+#    dest: ~/.composer/auth.json
+#  when: web_olympus_app.github_auth
+#
+#- name: Install composer locally
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  shell: curl -sS https://getcomposer.org/installer | php
+#  args:
+#    chdir: "/home/{{ web_olympus_app.name }}/code"
+#    creates: "/home/{{ web_olympus_app.name }}/code/composer.phar"
+#
+#- name: Install phing
+#  become: yes
+#  command: "{{ item }}"
+#  args:
+#    chdir: /tmp
+#  ignore_errors: yes
+#  with_items:
+#    - pear channel-discover pear.phing.info
+#    - pear install phing/phing-2.14.0
+#  register: php_phing_result
+#  failed_when: "not (('already installed' in php_phing_result.stdout) or ('succeeded' in php_phing_result.stdout) or  ('install ok:' in php_phing_result.stdout))"
+#
+#- name: Install PHP Amazon S3 Tools
+#  become: yes
+#  command: "{{ item }}"
+#  args:
+#    chdir: /tmp
+#  ignore_errors: yes
+#  with_items:
+#    - pear install Services_Amazon_S3-0.4.0
+#
+#- name: Install Gulp globally
+#  become: yes
+#  npm:
+#    name: gulp
+#    global: yes
+#
+#- name: Install App dependencies including composer and npm installs
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  command: "phing {{ item }}"
+#  args:
+#    chdir: "/home/{{ web_olympus_app.name }}/code"
+#  with_items:
+#    - install:app:dependencies
+#
+#- name: Install AppDynamics PHP Agent
+#  include: build/app_dynamics.yml
+#
+#- name: Ensure Cloudwatch folder exist
+#  become: yes
+#  file:
+#    name: "{{ item }}"
+#    state: directory
+#  with_items:
+#    - /opt/aws/cloudwatch
+#
+#- name: Download AWS Cloudwatch agent installation script
+#  become: yes
+#  get_url:
+#    url: "{{ web_olympus_app.aws.cloudwatch.agent.install_script_url }}"
+#    dest: "/opt/aws/cloudwatch/awslogs-agent-setup.py"
+#    mode: 0775

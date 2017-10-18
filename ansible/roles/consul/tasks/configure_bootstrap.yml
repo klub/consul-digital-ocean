@@ -1,0 +1,153 @@
+---
+
+- name: Start Consul bootstrap
+  shell: "consul agent -bind {{ private_ip }} -advertise {{ private_ip }} -server -bootstrap -data-dir /tmp/consul > bootstrap.log &"
+
+- name: Join with svr2 and svr3
+  shell: "consul join {{ item }}"
+  with_items:
+    - "{{ svr2_ip }}"
+    - "{{ svr3_ip }}"
+
+
+
+#- name: Mark service as not ready for remote crons
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  file:
+#    path: "{{ web_olympus_app.root }}/READY"
+#    state: absent
+#
+#- name: Create Phing property file for current environment
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: php/build.properties.j2
+#    dest: "/home/{{ web_olympus_app.name }}/code/build.properties"
+#
+#- name: Creates .venv
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: php/venv.j2
+#    dest: "/home/{{ web_olympus_app.name }}/code/.venv"
+#
+#- name: Creates .venv
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: php/venv.j2
+#    dest: "/home/{{ web_olympus_app.name }}/.venv"
+#
+#- name: Creates .bash_profile
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: php/bash_profile.j2
+#    dest: "/home/{{ web_olympus_app.name }}/.bash_profile"
+#    mode: 0644
+#
+#- name: Configure Nginx
+#  include: configure/nginx.yml
+#
+#- name: Adds php.ini
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  template:
+#    src: php/php.ini.j2
+#    dest: "/home/{{ web_olympus_app.name }}/etc/php.ini"
+#  notify:
+#    - restart web_olympus_app
+#
+#- name: Remove cli php.ini
+#  become: yes
+#  command: "unlink /etc/php/{{ web_olympus_app.php.version }}/cli/php.ini"
+#  ignore_errors: true
+#
+#- name: Symlink php.ini for cli to php.ini for fpm
+#  become: yes
+#  file:
+#    src: "/home/{{ web_olympus_app.name }}/etc/php.ini"
+#    dest: "/etc/php/{{ web_olympus_app.php.version }}/cli/php.ini"
+#    state: link
+#  notify:
+#    - restart web_olympus_app
+#
+#- name: Configure Database Application User
+#  include: configure/db_user.yml
+#
+#- name: Configure web application including php vendors and gulp
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  command: "phing -propertyfile build.properties {{ item }}"
+#  args:
+#    chdir: "/home/{{ web_olympus_app.name }}/code"
+#  environment: "{{ web_olympus_app.env }}"
+#  with_items:
+#    - configure:app
+#
+#- name: Configure Database Schema
+#  include: configure/db_schema.yml
+#
+#- name: Remove redundant non prd files from web folder
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  file:
+#    path: "{{ web_olympus_app.root }}/code/web/{{ item }}"
+#    state: absent
+#  with_items:
+#    - "app_dev.php"
+#    - "app_stage.php"
+#    - "app_test.php"
+#    - "app_uat.php"
+#    - "config.php"
+#  when: web_olympus_app.remove_non_prd_files_from_web_folder == true
+#
+#- name: Gather EC2 facts
+#  action: ec2_facts
+#
+#- name: Install AppDynamics PHP Agent
+#  include: configure/app_dynamics.yml
+#  when: web_olympus_app.app_dynamics.php_agent.enabled == true
+#
+#- name: Create AWS Cloudwatch Agent config file
+#  become: yes
+#  template:
+#    src: aws/cloudwatch/cwlogs.cfg.j2
+#    dest: "/opt/aws/cloudwatch/cwlogs.cfg"
+#  when: web_olympus_app.aws.cloudwatch.agent.enabled == true
+#
+#- name: Install AWS Cloudwatch agent
+#  become: yes
+#  command: "/opt/aws/cloudwatch/awslogs-agent-setup.py -n -r {{ region }} -c /opt/aws/cloudwatch/cwlogs.cfg"
+#  when: web_olympus_app.aws.cloudwatch.agent.enabled == true
+#
+#- name: Clear prod cache
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  command: "app/console cache:clear --env=prod"
+#  args:
+#    chdir: "/home/{{ web_olympus_app.name }}/code"
+#  environment: "{{ web_olympus_app.env }}"
+#
+#- name: Ensures web_olympus_app is running
+#  become: yes
+#  command: "service {{ web_olympus_app.name }} restart"
+#  register: php_fpm_restart_res
+#  failed_when: " 'fail' in php_fpm_restart_res.stdout"
+#
+#- name: Ensures nginx is running
+#  become: yes
+#  service:
+#    name: nginx
+#    state: started
+#
+#- name: Mark application as ready for remote crons
+#  become: yes
+#  become_user: "{{ web_olympus_app.name }}"
+#  file:
+#    path: "{{ web_olympus_app.root }}/READY"
+#    state: touch
+#    owner: "{{ web_olympus_app.name }}"
+#    group: "{{ web_olympus_app.group }}"
+#    mode: 0644

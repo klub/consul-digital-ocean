@@ -1,0 +1,43 @@
+---
+##
+# The postgresql RDS integration will throw an error
+# "psycopg2.ProgrammingError: permission denied for relation pg_authid" which can be fixed by only updateing
+# user permissions only when the DB has changed.
+#
+
+- name: Create database
+  postgresql_db:
+    login_host: "{{ web_olympus_app.env.SYMFONY__DATABASE_HOST }}"
+    login_password: "{{ web_olympus_app.postgresql.root_password }}"
+    login_user: "{{ web_olympus_app.postgresql.root_user }}"
+    name: "{{ web_olympus_app.env.SYMFONY__DATABASE_NAME }}"
+    state: present
+  # check comments at the top
+  register: create_db
+
+- name: Create db user for xmas_ordering application and set password
+  postgresql_user:
+    db: "{{ web_olympus_app.env.SYMFONY__DATABASE_NAME }}"
+    login_host: "{{ web_olympus_app.env.SYMFONY__DATABASE_HOST }}"
+    login_password: "{{ web_olympus_app.postgresql.root_password }}"
+    login_user: "{{ web_olympus_app.postgresql.root_user }}"
+    name: "{{ web_olympus_app.env.SYMFONY__DATABASE_USER }}"
+    password: "{{ web_olympus_app.env.SYMFONY__DATABASE_PASSWORD }}"
+    priv: "ALL"
+    state: present
+  # check comments at the top
+  when: create_db.changed
+
+- name: Create db user for xmas_ordering application
+  postgresql_user:
+    db: "{{ web_olympus_app.env.SYMFONY__DATABASE_NAME }}"
+    login_host: "{{ web_olympus_app.env.SYMFONY__DATABASE_HOST }}"
+    login_password: "{{ web_olympus_app.postgresql.root_password }}"
+    login_user: "{{ web_olympus_app.postgresql.root_user }}"
+    name: "{{ web_olympus_app.env.SYMFONY__DATABASE_USER }}"
+    no_password_changes: yes
+    priv: "ALL"
+    state: present
+  # check comments at the top
+  when: create_db.changed
+

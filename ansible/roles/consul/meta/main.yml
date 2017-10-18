@@ -1,0 +1,107 @@
+---
+
+#dependencies:
+#
+#  - role: sansible.users_and_groups
+#    users_and_groups:
+#      groups:
+#        - name: "{{ web_olympus_app.name }}"
+#      users:
+#        - name: "{{ web_olympus_app.name }}"
+#          group: "{{ web_olympus_app.name }}"
+#          shell: '/bin/bash'
+#          gecos: 'web xmas_ordering user'
+#    tags:
+#      - build
+#
+#  - role: sansible.nginx
+#    tags:
+#      - build
+#
+#  - role: sansible.nodejs
+#    nodejs:
+#      version: 4
+#    tags:
+#      - build
+#
+#  - role: sansible.php
+#    php:
+#      version: php{{ web_olympus_app.php.version }}
+#      modules:
+#        - php{{ web_olympus_app.php.version }}-curl
+#        - php{{ web_olympus_app.php.version }}-intl
+#        - php{{ web_olympus_app.php.version }}-mcrypt
+#        - php{{ web_olympus_app.php.version }}-mysql
+#        - php{{ web_olympus_app.php.version }}-pgsql
+#        - php{{ web_olympus_app.php.version }}-sqlite3
+#      paths:
+#        etc: /etc/php/{{ web_olympus_app.php.version }}
+#        fpm_pool: /etc/php/{{ web_olympus_app.php.version }}/fpm/pool.d
+#      extras:
+#        - libssh2-1-dev
+#        - php{{ web_olympus_app.php.version }}-dev
+#        - php{{ web_olympus_app.php.version }}-gd
+#        - php{{ web_olympus_app.php.version }}-intl
+#        - php{{ web_olympus_app.php.version }}-json
+#        - php{{ web_olympus_app.php.version }}-mcrypt
+#        - php{{ web_olympus_app.php.version }}-redis
+#        - php{{ web_olympus_app.php.version }}-xml
+#        - php{{ web_olympus_app.php.version }}-mbstring
+#        - php{{ web_olympus_app.php.version }}-soap
+#      fpm:
+#        user: "{{ web_olympus_app.name }}"
+#        group: "{{ web_olympus_app.name }}"
+#        chroot: "/home/{{ web_olympus_app.name }}/code/web"
+#        description: Web Xmas Ordering
+#        bin: php-fpm{{ web_olympus_app.php.version }}
+#      pecl:
+#        - xdebug
+#    tags:
+#      - build
+#
+#  - role: ssh_agent
+#    ssh_agent:
+#      user: "{{ web_olympus_app.name }}"
+#    tags:
+#      - build
+#      - download_application
+#
+#  - role: logrotate
+#    logrotate:
+#      builtin_configs:
+#        application_logs:
+#          enabled: true
+#          paths:
+#            - "{{ web_olympus_app.logs.user_dir }}/*.log"
+#            - "{{ web_olympus_app.logs.nginx_access_file }}"
+#            - "{{ web_olympus_app.logs.nginx_error_file }}"
+#    tags:
+#      - build
+#
+#  - role: rsyslog
+#    rsyslog:
+#      app_name: web_olympus_app
+#      builtin_configs:
+#        application_logs:
+#          enabled: true
+#          logs:
+#            - path: "{{ web_olympus_app.logs.user_dir }}/*.log"
+#            - path: "{{ web_olympus_app.logs.nginx_error_file }}"
+#        nginx_access_logs:
+#          enabled: true
+#          logs:
+#            - path: "{{ web_olympus_app.logs.nginx_access_file }}"
+#    tags:
+#      - build
+#
+#  - role: aws_bootstrap
+#    aws_bootstrap:
+#      services_ops_version: ~
+#      ansible_version: 2.0.0.2
+#    when: ansible_user_id != 'vagrant'
+#    tags:
+#      - build
+#
+#  - role: ntp
+#    tags:
+#      - build

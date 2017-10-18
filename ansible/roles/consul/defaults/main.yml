@@ -1,0 +1,93 @@
+---
+
+consul_version: 0.9.2
+consul:
+  version: "{{ consul_version }}"
+  binary_url: "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip?_ga=2.7337074.1936699014.1504730318-1165900115.1504730318"
+
+#web_olympus_app:
+#  app_behind_loadbalancer: false
+#  app_dynamics:
+#    aws:
+#      iam: #User able to only download the PHP Agent
+#        access_key_id: AKIAJ4JFCDHTUZUUSFIQ
+#        secret_access_key: 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
+#        username: app.dynamics
+#    php_agent:
+#      compressed_file_name: appdynamics-php-agent-x64-linux-4.2.5.1.tar.bz2
+#      enabled: false
+#  app_env_mode: dev #vagrant
+#  aws:
+#    cloudwatch:
+#      agent:
+#        enabled: false
+#        install_script_url: https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py
+#      logs_to_monitor:
+#        - name: application_log
+#          path: "/home/web_olympus_app/code/app/logs/prod.log"
+#        - name: cron_log
+#          path: "/home/web_olympus_app/code/app/logs/console.prod.log"
+#        - name: nginx_access_log
+#          path: "/var/log/nginx/web-olympus-app-access.log"
+#        - name: nginx_error_log
+#          path: "/var/log/nginx/web-olympus-app-error.log"
+#  env:
+#    APPLICATION_ENV: local
+#    SYMFONY__APP_BASE_URL: https://web-olympus.app.internal
+#
+#    SYMFONY__DATABASE_HOST: web-olympus-app.postgresql.db.internal
+#    SYMFONY__DATABASE_NAME: web_olympus_app
+#    SYMFONY__DATABASE_NAME_TEST: web_olympus_app_test
+#    SYMFONY__DATABASE_USER: web_olympus_app
+#    SYMFONY__DATABASE_PASSWORD: web_olympus_app
+#    SYMFONY__DATABASE_PORT: 5432
+#
+#    SYMFONY__MAILER_TRANSPORT: smtp
+#    SYMFONY__MAILER__SENDGRID__USERNAME: xmas
+#    SYMFONY__MAILER__SENDGRID__PASSWORD: xmas
+#    SYMFONY__MAILER__SENDGRID__APIKEY: xmas
+#
+#    SYMFONY__MAILER_HOST: email-smtp.eu-west-1.amazonaws.com
+#    SYMFONY__MAILER_USER: AKIAIPIGMT2YH2EOUTIA
+#    SYMFONY__MAILER_PASSWORD: ApFUZbk/73Gv9Gsod7BYNgWmZXMD/Qa6ktTjmDabkBKw
+#    SYMFONY__MAILER_FROM: aws.admin@sainsburys.co.uk
+#    SYMFONY__MAILER_FROM_NAME: '"Sainsburys Christmas Ordering"'
+#    SYMFONY__MAILER_PORT: 587
+#    SYMFONY__MAILER_ENCRYPTION: tls
+#
+#    SYMFONY__TLG__SHARED_SECRET: Xm4sF88d
+#    SYMFONY__TLG__ENTERPRISE_ID: SAINSBURY1
+#    SYMFONY__TLG__WDSL: https://esainsbury1ws.test-secure-payment-processing.com/EMISws/WebPayment_1_0?wsdl
+#    SYMFONY__TLG__CLIENT_ID: CFWP
+#    SYMFONY__TLG__METHOD: ECommerce
+#    SYMFONY__TLG__IGNORE_SSL: 1
+#    SYMFONY__TLG__DOWN_THRESHOLD_SECS: 300
+#
+#    SYMFONY__REDIS__PREFIX: dev
+#    SYMFONY__REDIS__DSN__DEFAULT: redis://localhost
+#    SYMFONY__REDIS__DSN__SESSIONS: redis://localhost/1
+#    SYMFONY__REDIS__DSN__DOCTRINE: redis://localhost/3
+#  fpm:
+#    max_children: 100
+#  front_controller_file: app_dev.php
+#  group: web_olympus_app
+#  logs:
+#    nginx_access_file: /var/log/nginx/web-olympus-app-access.log
+#    nginx_error_file: /var/log/nginx/web-olympus-app-error.log
+#    user_dir: /home/web_olympus_app/logs
+#  name: web_olympus_app
+#  port: 80
+#  postgresql:
+#    root_user: postgres
+#    root_password: password
+#  php:
+#    version: 7.1
+#    ini:
+#      memory_limit: 612M
+#  remove_non_prd_files_from_web_folder: false
+#  repo_version: master
+#  root: /home/web_olympus_app
+#  server_name: web-olympus.app.internal
+#  subdomain_prefix: web-olympus-app
+#  user: web_olympus_app
+#

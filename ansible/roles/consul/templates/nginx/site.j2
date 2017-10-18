@@ -1,0 +1,67 @@
+##
+# {{ ansible_managed }}
+#
+
+server {
+
+    sendfile on;
+    keepalive_timeout 65;
+    access_log {{ web_olympus_app.logs.nginx_access_file }} main;
+    error_log {{ web_olympus_app.logs.nginx_error_file }};
+
+    {% if not web_olympus_app.app_behind_loadbalancer %}
+        ssl_certificate {{ web_olympus_app.root }}/ssl/web_olympus_app.crt;
+        ssl_certificate_key {{ web_olympus_app.root }}/ssl/web_olympus_app.key;
+    {% endif %}
+
+    listen *:80 default_server;
+    {% if not web_olympus_app.app_behind_loadbalancer %}
+        listen *:443 ssl;
+    {% endif %}
+    server_name _;
+
+    location = /healthcheck {
+      try_files $uri @rewriteapp;
+      break;
+    }
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+
+    rewrite ^/images/(.*)$ https://s3-eu-west-1.amazonaws.com/xmas-images/$1 last;
+    rewrite ^/(.*)/$ /$1 permanent;
+
+    location / {
+    {% if not web_olympus_app.app_behind_loadbalancer %}
+        #No loadbalancer
+        if ($ssl_protocol = "") {
+          rewrite ^/(.*) https://$host/$1 permanent;
+        }
+    {% else %}
+        #Behind load balancer
+        if ( $http_x_forwarded_proto != 'https' ) {
+          rewrite ^/(.*) https://$host/$1 permanent;
+        }
+    {% endif %}
+        try_files $uri @rewriteapp;
+    }
+
+    root  "{{ web_olympus_app.root }}/code/web";
+
+    location @rewriteapp {
+        rewrite ^(.*)$ /{{ web_olympus_app.front_controller_file }}/$1 last;
+    }
+
+    location ~ \.php(/|$) {
+        include fastcgi_params;
+        include includes/{{ web_olympus_app.name }}_fastcgi_params;
+
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+
+        fastcgi_pass unix:{{ web_olympus_app.root }}/run/php{{ web_olympus_app.php.version }}-fpm.sock;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_intercept_errors on;
+    }
+}

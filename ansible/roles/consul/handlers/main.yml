@@ -1,0 +1,7 @@
+---
+
+#- name: restart web_olympus_app #(php-fpm chrooted)
+#  become: yes
+#  service:
+#    name: "{{ web_olympus_app.name }}"
+#    state: restarted

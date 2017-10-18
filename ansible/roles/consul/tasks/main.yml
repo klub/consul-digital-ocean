@@ -1,0 +1,51 @@
+---
+
+- name: Install Consul
+  include: install.yml
+  tags:
+    - build
+
+- name: "Build webserver on {{ hostname }}"
+  include: build/webserver.yml
+  tags:
+    - build_webserver
+
+
+
+- name: Configure Consul Bootstrap
+  include: configure_bootstrap.yml
+  tags:
+    - configure_bootstrap
+
+- name: "Configure Consul server {{ hostname }}"
+  include: configure.yml
+  tags:
+    - configure
+
+- name: "Configure Consul agent {{ hostname }}"
+  include: configure_agent.yml
+  tags:
+    - configure_agent
+
+- name: "Configure webserver on {{ hostname }}"
+  include: configure_webserver.yml
+  tags:
+    - configure_webserver
+
+
+#
+#- name: Configure Xmas Ordering Static Site
+#  include: configure_static_site.yml
+#  tags:
+#    - configure_static_site
+#
+#- name: Setup Vagrant VM instance
+#  include: vagrant.yml
+#  when: ansible_user_id == 'vagrant' or test_mode is defined
+#  tags:
+#    - local_build
+#
+#- name: Run basic checks on app
+#  include: check.yml
+#  tags:
+#    - check

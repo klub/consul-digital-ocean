@@ -1,0 +1,25 @@
+---
+
+- name: Test Nginx configuration is OK
+  become: yes
+  command: nginx -t
+
+- name: Flush handlers to ensure everything is up to date
+  meta: flush_handlers
+
+- name: check php-fpm is up and running
+  become: yes
+  command: "service {{ web_olympus_app.name }} status"
+  register: php_fpm_status
+  failed_when: not "{{ web_olympus_app.name }} is running" in php_fpm_status.stdout
+  when: ( ((role is defined ) and (role != "web_olympus_app_static")) or (web_olympus_app.env.APPLICATION_ENV == 'local') )
+
+- name: Wait for Nginx port
+  wait_for:
+    port: "{{ web_olympus_app.port }}"
+    state: started
+    timeout: 10
+
+- name: Check if Nginx responds locally and loads healthcheck page
+  uri:
+    url: http://localhost/healthcheck

@@ -1,0 +1,77 @@
+---
+##
+# The postgresql RDS integration will throw an error
+# "psycopg2.ProgrammingError: permission denied for relation pg_authid" which can be fixed by only updateing
+# user permissions only when the DB has changed.
+#
+
+- name: Configure web application for testing
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  command: "phing -propertyfile build.properties {{ item }}"
+  args:
+    chdir: "/home/{{ web_olympus_app.name }}/code"
+  environment: "{{ web_olympus_app.env }}"
+  with_items:
+    - test:app:prepare
+
+- name: Create Test database
+  postgresql_db:
+    login_host: "{{ web_olympus_app.env.SYMFONY__DATABASE_HOST }}"
+    login_password: "{{ web_olympus_app.postgresql.root_password }}"
+    login_user: "{{ web_olympus_app.postgresql.root_user }}"
+    name: "{{ web_olympus_app.env.SYMFONY__DATABASE_NAME_TEST }}"
+    owner: "{{ web_olympus_app.env.SYMFONY__DATABASE_USER }}"
+    state: present
+  # check comments at the top
+  register: create_test_db
+
+- name: Create Test database user
+  postgresql_user:
+    db: "{{ web_olympus_app.env.SYMFONY__DATABASE_NAME_TEST }}"
+    login_host: "{{ web_olympus_app.env.SYMFONY__DATABASE_HOST }}"
+    login_password: "{{ web_olympus_app.postgresql.root_password }}"
+    login_user: "{{ web_olympus_app.postgresql.root_user }}"
+    name: "{{ web_olympus_app.env.SYMFONY__DATABASE_USER }}"
+    password: "{{ web_olympus_app.env.SYMFONY__DATABASE_PASSWORD }}"
+    priv: "ALL"
+    role_attr_flags: CREATEDB
+    state: present
+  # check comments at the top
+  when: create_test_db.changed
+
+- name: Create TEST application schema
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  command: "phing -propertyfile build.properties {{ item }}"
+  args:
+    chdir: "/home/{{ web_olympus_app.name }}/code"
+  environment: "{{ web_olympus_app.env }}"
+  with_items:
+    - configure:db-schema:test-only
+
+- name: Create SSL folder
+  become: yes
+  become_user: "{{ web_olympus_app.user }}"
+  file:
+    name: "{{ web_olympus_app.root }}/{{ item }}"
+    state: directory
+  with_items:
+    - ssl
+
+- name: Check if SSL certs already exist
+  become: yes
+  become_user: "{{ web_olympus_app.user }}"
+  stat: path={{ web_olympus_app.root }}/ssl/web_olympus_app.crt
+  register: crt
+
+- name: Generate SSL certificate for Vagrant env
+  become: yes
+  become_user: "{{ web_olympus_app.user }}"
+  command: "{{ item }}"
+  with_items:
+    - openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj "/C=GB/ST=London/L=London/O=Sainsbury's/CN=web-olympus.app.internal" -keyout "{{ web_olympus_app.root }}/ssl/web_olympus_app.key" -out "{{ web_olympus_app.root }}/ssl/web_olympus_app.crt"
+    - openssl x509 -x509toreq -in "{{ web_olympus_app.root }}/ssl/web_olympus_app.crt" -out "{{ web_olympus_app.root }}/ssl/web_olympus_app.csr" -signkey "{{ web_olympus_app.root }}/ssl/web_olympus_app.key"
+  when: crt.stat.islnk is not defined
+  notify:
+    - reload nginx

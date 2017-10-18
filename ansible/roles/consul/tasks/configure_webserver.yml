@@ -1,0 +1,19 @@
+---
+
+- name: Create services config folder
+  file:
+    name: ~/services
+    state: directory
+
+- name: Create webserver services definition
+  template:
+    src: consul/services/web.json.j2
+    dest: ~/services/web.json
+#  when: web_olympus_app.github_auth
+
+- name: "Kill consul process"
+  command: "killall -9 consul"
+
+- name: "Start Consul agent {{ hostname }} with webserver"
+  shell: "consul agent -enable-script-checks -bind {{ private_ip }} -advertise {{ private_ip }} -client {{ private_ip }} -ui -data-dir /tmp/consul -config-dir ~/services -retry-join {{ svr2_ip }} > bootstrap.log &"
+

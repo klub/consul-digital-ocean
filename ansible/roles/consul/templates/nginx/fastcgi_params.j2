@@ -1,0 +1,3 @@
+{% for param, value in web_olympus_app.env.iteritems() %}
+fastcgi_param {{ param }} {{ value }};
+{% endfor %}

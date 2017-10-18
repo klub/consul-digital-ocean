@@ -1,0 +1,21 @@
+---
+
+- name: Install App Dynamics agent zip
+  become: yes
+  shell: "./install.sh  -s -a={{ web_olympus_app.app_dynamics.account_name }}@{{ web_olympus_app.app_dynamics.account_access_key }} --log-dir={{ web_olympus_app.root }}/log -i=/etc/php/{{ web_olympus_app.php.version }}/mods-available --ignore-permissions {{ web_olympus_app.app_dynamics.controller_host }} {{ web_olympus_app.app_dynamics.controller_port }} {{ web_olympus_app.app_dynamics.app_name }} {{ env }} web_olympus_app_{{ env }}_{{ ansible_ec2_instance_id }}"
+  ignore_errors: yes
+  args:
+    chdir: "{{ web_olympus_app.root }}/bin/appdynamics-php-agent"
+  notify:
+    - reload nginx
+    - restart web_olympus_app
+
+- name: Symlink appdynamics_agent.ini to fpm folders
+  become: yes
+  file:
+    src: /etc/php/{{ web_olympus_app.php.version }}/mods-available/appdynamics_agent.ini
+    dest: "{{ item }}"
+    state: link
+  with_items:
+    - /etc/php/{{ web_olympus_app.php.version }}/fpm/conf.d/appdynamics_agent.ini
+    - /etc/php/{{ web_olympus_app.php.version }}/cli/conf.d/appdynamics_agent.ini

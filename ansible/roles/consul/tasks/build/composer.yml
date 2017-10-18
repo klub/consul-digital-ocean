@@ -1,0 +1,16 @@
+---
+
+- name: Create composer config folder
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  file:
+    name: ~/.composer
+    state: directory
+
+- name: Create composer github auth
+  become: yes
+  become_user: "{{ web_olympus_app.name }}"
+  template:
+    src: composer/auth.j2
+    dest: ~/.composer/auth.json
+  when: web_olympus_app.github_auth
